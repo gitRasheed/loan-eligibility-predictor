@@ -1,9 +1,0 @@
-{
-    "rewrites": [{ "source": "/api/(.*)", "destination": "/api" }],
-    "functions": {
-      "api/predict.py": {
-        "memory": 1024,
-        "maxDuration": 12
-      }
-    }
-  }
