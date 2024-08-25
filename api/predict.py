@@ -1,18 +1,17 @@
-import joblib
-import os
 import sys
+import joblib
+import numpy as np
+import os
 import pandas as pd
-from typing import Dict, Any
 
-# Load the model and scaler only once when the script is imported
 current_dir = os.path.dirname(os.path.abspath(__file__))
-model_path = os.path.join(current_dir, '..', 'models', 'loan_eligibility_model.joblib')
-scaler_path = os.path.join(current_dir, '..', 'models', 'feature_scaler.joblib')
+model_path = os.path.join(current_dir, '..', 'ml', 'models', 'loan_eligibility_model.joblib')
+scaler_path = os.path.join(current_dir, '..', 'ml', 'models', 'feature_scaler.joblib')
 
 model = joblib.load(model_path)
 scaler = joblib.load(scaler_path)
 
-def calculate_derived_features(data: Dict[str, Any]) -> Dict[str, float]:
+def calculate_derived_features(data):
     loan_amount = data['loan_amount']
     income_annum = data['income_annum']
     loan_term = data['loan_term']
@@ -25,7 +24,7 @@ def calculate_derived_features(data: Dict[str, Any]) -> Dict[str, float]:
         'balance_income': income_annum - (loan_amount / (loan_term * 12) if loan_term != 0 else 0) * 12
     }
 
-def predict_loan_eligibility(data: Dict[str, Any]) -> bool:
+def predict_loan_eligibility(data):
     derived_features = calculate_derived_features(data)
 
     features = pd.DataFrame({
