@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import path from 'path';
 
 const execPromise = promisify(exec);
 
-const SCRIPT_PATH = 'ml/scripts/predict.py';
+const SCRIPT_PATH = path.join(process.cwd(), 'api', 'predict.py');
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
@@ -15,7 +16,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const command = `python ${SCRIPT_PATH} ${loanTerm} ${creditScore} ${annualIncome} ${loanAmount} ${assetsValue}`;
+    const command = `python "${SCRIPT_PATH}" ${loanTerm} ${creditScore} ${annualIncome} ${loanAmount} ${assetsValue}`;
 
     const { stdout, stderr } = await execPromise(command);
 
