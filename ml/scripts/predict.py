@@ -3,8 +3,11 @@ import os
 import pandas as pd
 from typing import Dict, Any
 from flask import Flask, request, jsonify
+from flask_cors import CORS
+import logging
 
 app = Flask(__name__)
+CORS(app)
 
 # Load the model and scaler only once when the script is imported
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -46,12 +49,17 @@ def predict_loan_eligibility(data: Dict[str, Any]) -> bool:
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    app.logger.info("Received a request")
     data = request.json
+    app.logger.info(f"Received data: {data}")
+    
     try:
         result = predict_loan_eligibility(data)
+        app.logger.info(f"Prediction result: {result}")
         return jsonify({"eligible": result})
     except Exception as e:
+        app.logger.error(f"Error in prediction: {str(e)}")
         return jsonify({"error": str(e)}), 400
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+    app.run(host='0.0.0.0', port=5000, debug=True)

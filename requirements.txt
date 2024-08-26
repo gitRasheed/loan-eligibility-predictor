@@ -6,3 +6,5 @@ seaborn
 xgboost
 optuna
 flask
+flask_cors
+logging
