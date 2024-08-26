@@ -1,8 +1,10 @@
 import joblib
 import os
-import sys
 import pandas as pd
 from typing import Dict, Any
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
 
 # Load the model and scaler only once when the script is imported
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -42,22 +44,14 @@ def predict_loan_eligibility(data: Dict[str, Any]) -> bool:
 
     return bool(prediction[0])
 
-if __name__ == "__main__":
-    if len(sys.argv) != 6:
-        print("Usage: python predict.py <loan_term> <cibil_score> <income_annum> <loan_amount> <total_assets>")
-        sys.exit(1)
-
+@app.route('/predict', methods=['POST'])
+def predict():
+    data = request.json
     try:
-        input_data = {
-            'loan_term': int(sys.argv[1]),
-            'cibil_score': int(sys.argv[2]),
-            'income_annum': float(sys.argv[3]),
-            'loan_amount': float(sys.argv[4]),
-            'total_assets': float(sys.argv[5])
-        }
-    except ValueError:
-        print("Error: Invalid input. Please make sure all inputs are numeric.")
-        sys.exit(1)
+        result = predict_loan_eligibility(data)
+        return jsonify({"eligible": result})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
-    result = predict_loan_eligibility(input_data)
-    print(result)
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))

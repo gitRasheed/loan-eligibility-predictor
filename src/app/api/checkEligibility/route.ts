@@ -1,10 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execPromise = promisify(exec);
-
-const SCRIPT_PATH = 'ml/scripts/predict.py';
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
@@ -15,18 +9,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const command = `python ${SCRIPT_PATH} ${loanTerm} ${creditScore} ${annualIncome} ${loanAmount} ${assetsValue}`;
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    const response = await fetch(`${backendUrl}/predict`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ loanTerm, creditScore, annualIncome, loanAmount, assetsValue }),
+    });
 
-    const { stdout, stderr } = await execPromise(command);
-
-    if (stderr) {
-      console.error('Error from Python script:', stderr);
-      return NextResponse.json({ error: 'Error in prediction script' }, { status: 500 });
+    if (!response.ok) {
+      throw new Error(`Backend responded with status: ${response.status}`);
     }
 
-    const eligible = stdout.trim().toLowerCase() === 'true';
+    const result = await response.json();
 
-    return NextResponse.json({ eligible });
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Error in checkEligibility route:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
