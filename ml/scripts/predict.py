@@ -9,6 +9,8 @@ import logging
 app = Flask(__name__)
 CORS(app)
 
+logging.basicConfig(level=logging.INFO)
+
 # Load the model and scaler only once when the script is imported
 current_dir = os.path.dirname(os.path.abspath(__file__))
 model_path = os.path.join(current_dir, '..', 'models', 'loan_eligibility_model.joblib')
@@ -62,4 +64,5 @@ def predict():
         return jsonify({"error": str(e)}), 400
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host='0.0.0.0', port=port, debug=False)
